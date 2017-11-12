@@ -1,12 +1,12 @@
 package rsc.cli
 
+import rsc.lex._
 import rsc.lexis._
 import rsc.report._
 import rsc.settings._
-import rsc.tokenize._
 import rsc.util._
 
-object TokenizeMain {
+object LexMain {
   def main(args: Array[String]): Unit = {
     Settings.parse(args.toList) match {
       case Some(settings) =>
@@ -14,22 +14,21 @@ object TokenizeMain {
         val inputs = settings.ins.map(in => Input(in))
         inputs.foreach { input =>
           if (input.file.isFile) {
-            val tokenizer = Tokenizer(settings, reporter, input)
+            val lexer = Lexer(settings, reporter, input)
             println(input.str)
             try {
               var prevEnd = 0
-              while (tokenizer.token != EOF) {
-                if (tokenizer.start != prevEnd) {
-                  sys.error(s"Token start (${tokenizer.start}) doesn't match previous token end ($prevEnd)")
+              while (lexer.token != EOF) {
+                if (lexer.start != prevEnd) {
+                  sys.error(s"Token start (${lexer.start}) doesn't match previous token end ($prevEnd)")
                 } else {
-                  prevEnd = tokenizer.end
+                  prevEnd = lexer.end
                 }
-                val msg_pos = s"[${tokenizer.start}..${tokenizer.end}) "
-                val msg_token = s"${tokenRepl(tokenizer.token)} "
+                val msg_pos = s"[${lexer.start}..${lexer.end}) "
+                val msg_token = s"${tokenRepl(lexer.token)} "
                 val msg_data = {
-                  val result = input.string.substring(tokenizer.start, tokenizer.end)
-                  tokenizer.token match {
-                    case COMMENT => result
+                  val result = input.string.substring(lexer.start, lexer.end)
+                  lexer.token match {
                     case LITCHAR => result
                     case LITDOUBLE => result
                     case LITFLOAT => result
@@ -42,10 +41,10 @@ object TokenizeMain {
                   }
                 }
                 println(msg_pos + msg_token + msg_data)
-                tokenizer.next()
+                lexer.next()
               }
-              if (tokenizer.end != input.string.length) {
-                sys.error(s"Token stream end (${tokenizer.end}) doesn't match input length (${input.string.length})")
+              if (lexer.end != input.string.length) {
+                sys.error(s"Token stream end (${lexer.end}) doesn't match input length (${input.string.length})")
               }
             } catch {
               case crash @ CrashException(pos, message, ex) =>
@@ -53,7 +52,7 @@ object TokenizeMain {
                 val ex1 = if (ex != null) ex else crash
                 reporter.append(CrashMessage(pos1, message, ex1))
               case ex: Throwable =>
-                val pos = Position(input, tokenizer.offset, tokenizer.offset)
+                val pos = Position(input, lexer.offset, lexer.offset)
                 reporter.append(CrashMessage(pos, ex.getMessage, ex))
             }
           } else {
