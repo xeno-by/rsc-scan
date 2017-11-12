@@ -20,7 +20,11 @@ object TokenizeMain {
               while (tokenizer.token != EOF) {
                 val msg_pos = s"[${tokenizer.start}..${tokenizer.end}) "
                 val msg_token = s"${tokenRepl(tokenizer.token)} "
-                val msg_data = input.string.substring(tokenizer.start, tokenizer.end)
+                val msg_data = {
+                  val result = input.string.substring(tokenizer.start, tokenizer.end)
+                  if (keywords.contains(result) || result.trim.isEmpty) ""
+                  else result
+                }
                 println(msg_pos + msg_token + msg_data)
                 tokenizer.next()
               }
@@ -30,7 +34,7 @@ object TokenizeMain {
                 val ex1 = if (ex != null) ex else crash
                 reporter.append(CrashMessage(pos1, message, ex1))
               case ex: Throwable =>
-                val pos = Position(input, tokenizer.start, tokenizer.end)
+                val pos = Position(input, tokenizer.offset, tokenizer.offset)
                 reporter.append(CrashMessage(pos, ex.getMessage, ex))
             }
           } else {
