@@ -17,7 +17,13 @@ object TokenizeMain {
             val tokenizer = Tokenizer(settings, reporter, input)
             println(input.str)
             try {
+              var prevEnd = 0
               while (tokenizer.token != EOF) {
+                if (tokenizer.start != prevEnd) {
+                  sys.error(s"Token start (${tokenizer.start}) doesn't match previous token end ($prevEnd)")
+                } else {
+                  prevEnd = tokenizer.end
+                }
                 val msg_pos = s"[${tokenizer.start}..${tokenizer.end}) "
                 val msg_token = s"${tokenRepl(tokenizer.token)} "
                 val msg_data = {
@@ -37,6 +43,9 @@ object TokenizeMain {
                 }
                 println(msg_pos + msg_token + msg_data)
                 tokenizer.next()
+              }
+              if (tokenizer.end != input.string.length) {
+                sys.error(s"Token stream end (${tokenizer.end}) doesn't match input length (${input.string.length})")
               }
             } catch {
               case crash @ CrashException(pos, message, ex) =>
