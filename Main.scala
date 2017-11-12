@@ -22,8 +22,18 @@ object TokenizeMain {
                 val msg_token = s"${tokenRepl(tokenizer.token)} "
                 val msg_data = {
                   val result = input.string.substring(tokenizer.start, tokenizer.end)
-                  if (keywords.contains(result) || result.trim.isEmpty) ""
-                  else result
+                  tokenizer.token match {
+                    case COMMENT => result
+                    case LITCHAR => result
+                    case LITDOUBLE => result
+                    case LITFLOAT => result
+                    case LITINT => result
+                    case LITLONG => result
+                    case LITSTRING => result
+                    case LITSYMBOL => result
+                    case ID => result
+                    case _ => ""
+                  }
                 }
                 println(msg_pos + msg_token + msg_data)
                 tokenizer.next()
