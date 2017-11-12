@@ -10,7 +10,6 @@ object TokenizeMain {
   def main(args: Array[String]): Unit = {
     Settings.parse(args.toList) match {
       case Some(settings) =>
-        println(settings)
         val reporter = ConsoleReporter(settings)
         val inputs = settings.ins.map(in => Input(in))
         inputs.foreach { input =>
@@ -20,11 +19,8 @@ object TokenizeMain {
             try {
               while (tokenizer.token != EOF) {
                 val msg_pos = s"[${tokenizer.start}..${tokenizer.end}) "
-                val msg_token = s"${tokenRepl(tokenizer.token)}"
-                val msg_data = {
-                  if (tokenizer.data == null) ""
-                  else " " + tokenizer.data
-                }
+                val msg_token = s"${tokenRepl(tokenizer.token)} "
+                val msg_data = input.string.substring(tokenizer.start, tokenizer.end)
                 println(msg_pos + msg_token + msg_data)
                 tokenizer.next()
               }
