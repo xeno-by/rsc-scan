@@ -18,7 +18,8 @@ object ScanMain {
             println(input.str)
             try {
               var prevEnd = 0
-              while (scanner.token != EOF) {
+              var exit = false
+              while (!exit) {
                 if (scanner.start != prevEnd) {
                   sys.error(s"Token start (${scanner.start}) doesn't match previous token end ($prevEnd)")
                 } else {
@@ -28,6 +29,7 @@ object ScanMain {
                 val msg_token = s"${tokenRepl(scanner.token)} "
                 val msg_value = if (scanner.value != null) scanner.value else ""
                 println(msg_pos + msg_token + msg_value)
+                exit = scanner.token == EOF
                 scanner.next()
               }
               if (scanner.end != input.string.length) {
